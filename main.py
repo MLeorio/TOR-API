@@ -1,7 +1,6 @@
 from typing import List
-
 from fastapi import FastAPI
-from models import Annonce, Annonce_Pydantic, AnnonceIn_Pydantic
+from models import Annonce, Annonce_Pydantic, AnnonceIn_Pydantic, Device, Device_Pydantic, DeviceIn_Pydantic
 from tortoise.contrib.fastapi import HTTPNotFoundError, register_tortoise
 from pydantic import BaseModel
 from starlette.exceptions import HTTPException
@@ -10,35 +9,76 @@ from starlette.exceptions import HTTPException
 class Status(BaseModel):
     message : str
 
-app = FastAPI(title="TOR API", debug=True, version="V1", description="API pour l'application des objets perdus ou retrouves")
-
-
-@app.get("/")
-async def home():
-    return {"Hello" : "World"}
+app = FastAPI(
+    title="TOR API",
+    debug=True, version="V1",
+    description="API pour l'application des objets perdus ou retrouvés",
+    docs_url= "/"
+)
 
 
 @app.get("/annonces", response_model=List[Annonce_Pydantic])
 async def get_annonces():
+    """Recuperer toutes les annonces publiees sur la plateforme
+
+    Returns:
+        List[Annonce_Pydantic]: La liste des annonces preformatees
+    """
     return await Annonce_Pydantic.from_queryset(Annonce.all())
 
 
 @app.post("/annonce", response_model=Annonce_Pydantic)
 async def create_annonce(annonce: AnnonceIn_Pydantic):
+    """Methode pour la creation d'une annonce et la publiee sur la plateforme
+
+    Args:
+        annonce (AnnonceIn_Pydantic): Objet Annonce pour l'enregistrement
+
+    Returns:
+       Annonce_Pydantic : objet Annonce tout juste publiee
+    """
     obj = await Annonce.create(**annonce.model_dump(exclude_unset=True))
     return await Annonce_Pydantic.from_tortoise_orm(obj)
 
 @app.get("/annonce/{id}", response_model=AnnonceIn_Pydantic, responses={404:{'model': HTTPNotFoundError}})
 async def get_annonce(annonce_id: int):
+    """Recuperer une annonce publier selon son Id
+
+    Args:
+        annonce_id (int): id de l'annonce a recuperer
+
+    Returns:
+        AnnonceIn_Pydantic: Informations relatives a une annonce sans toutes les informations
+    """
     return await AnnonceIn_Pydantic.from_queryset_single(Annonce.get(id = annonce_id))
 
 @app.put("/annonce/{id}", response_model=Annonce_Pydantic)
 async def update_annonce(annonce_id: int, annonce: AnnonceIn_Pydantic):
+    """Mettre a jour les informations d'une annonce
+
+    Args:
+        annonce_id (int): Id de l'annonce a modifier
+        annonce (AnnonceIn_Pydantic): Objet avec les nouvelles valeurs a sauvergarder
+
+    Returns:
+        Annonce_Pydantic : Retour de l'objet mise a jour
+    """
     await Annonce.filter(id=annonce_id).update(**annonce.model_dump(exclude_unset=True))
     return await Annonce_Pydantic.from_queryset_single(Annonce.get(id=annonce_id))
 
 @app.delete("/annonce/{id}", response_model=Status)
 async def delete_annonce(annonce_id: int):
+    """Suppression de l'annonce selectionner
+
+    Args:
+        annonce_id (int): Id de l'annonce a supprimer
+
+    Raises:
+        HTTPException: L'objet choisi n'est pas retrouver dans la base (Soumettre un nouvel Id)
+
+    Returns:
+        Status : Message de confirmation de la suppression de l'annonce
+    """
     deleted_count = await Annonce.filter(id=annonce_id).delete()
     if not deleted_count:
         raise HTTPException(
@@ -46,6 +86,19 @@ async def delete_annonce(annonce_id: int):
             detail= f"L'annonce {annonce_id} n'a pas été trouvée"
         )
     return Status(message=f"L'annonce {annonce_id} a été supprimée")
+
+@app.post("/installation/", response_model=Status)
+async def get_device_info(device: DeviceIn_Pydantic):
+    """Recuperation et sauvegarde des infos de l'appareil qui fait une installation
+
+    Args:
+        device (DevicesIn_Pydantic): Infos relatives a l'appareil 
+
+    Returns:
+        _type_: _description_
+    """
+    obj = await Device.create(**device.model_dump(exclude_unset=True))
+    return Status(message=f"Nous sommes heureux de vous compter parmis nous, utilisateur {obj.device_id}")
 
 
 register_tortoise(
