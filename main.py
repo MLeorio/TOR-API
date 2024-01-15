@@ -12,22 +12,46 @@ class Status(BaseModel):
 app = FastAPI(
     title="TOR API",
     debug=True, version="V1",
-    description="API pour l'application des objets perdus ou retrouvés",
+    description="API pour l'application des objets perdus ou retrouvés blablabla",
     docs_url= "/"
 )
 
 
-@app.get("/annonces", response_model=List[Annonce_Pydantic])
+@app.get("/annonces", response_model=List[AnnonceIn_Pydantic])
 async def get_annonces():
     """Recuperer toutes les annonces publiees sur la plateforme
 
     Returns:
-        List[Annonce_Pydantic]: La liste des annonces preformatees
+        List[AnnonceIn_Pydantic]: La liste des annonces preformatees
     """
-    return await Annonce_Pydantic.from_queryset(Annonce.all())
+    return await AnnonceIn_Pydantic.from_queryset(Annonce.all())
+
+@app.get("/annonces/public", response_model=List[AnnonceIn_Pydantic])
+async def get_actives_annonces():
+    """Retourne la liste des annonces actives; censees etre deja publiees sur la plateforme publique
+
+    Returns:
+        List[AnnonceIn_Pydantic]: La liste des annonces preformatees
+    """
+    annonces = await Annonce.filter(actif=1).all()
+    if not annonces:
+        raise HTTPException(status_code=404, detail="Pas d'annonces actives")
+    return annonces
+
+@app.get("/annonces/private", response_model=List[AnnonceIn_Pydantic])
+async def get_inactive_annonce():
+    """Retourne la liste des annonces inactives. Cette liste sera consultee par les admins pour valider les annonces
+    
+    Returns:
+       List[AnnonceIn_Pydantic]: La liste des annonces preformatees
+    """
+    annonces = await Annonce.filter(actif=0).all()
+    if not annonces:
+        raise HTTPException(status_code=404, detail="Pas d'annonces inactives")
+    return annonces
 
 
-@app.post("/annonce", response_model=Annonce_Pydantic)
+@app.post("/annonce/", response_model=Annonce_Pydantic)
 async def create_annonce(annonce: AnnonceIn_Pydantic):
     """Methode pour la creation d'une annonce et la publiee sur la plateforme
 
@@ -95,7 +119,7 @@ async def get_device_info(device: DeviceIn_Pydantic):
         device (DevicesIn_Pydantic): Infos relatives a l'appareil 
 
     Returns:
-        _type_: _description_
+        Status: Message de confirmation de bonne installation
     """
     obj = await Device.create(**device.model_dump(exclude_unset=True))
     return Status(message=f"Nous sommes heureux de vous compter parmis nous, utilisateur {obj.device_id}")

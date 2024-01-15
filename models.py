@@ -12,6 +12,7 @@ class Annonce(models.Model):
     telephone_person_to_contact = fields.CharField(max_length=12)
     place_of_loss_or_find = fields.CharField(max_length=255)
     date_of_loss_or_find = fields.DateField()
+    
 
     statut = fields.CharField(max_length=50, ) # Statut de l'annonce (soit trouver ou perdu)
     actif = fields.IntField(default=1) # avertit si l'annonce est toujours actif ou pas (l'objet a retrouve son propretaire) 1=Oui 0=Non
