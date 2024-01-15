@@ -12,7 +12,7 @@ class Status(BaseModel):
 app = FastAPI(
     title="TOR API",
     debug=True, version="V1",
-    description="API pour l'application des objets perdus ou retrouvés blablabla",
+    description="API pour l'application des objets perdus ou retrouvés",
     docs_url= "/"
 )
 
@@ -33,10 +33,7 @@ async def get_actives_annonces():
     Returns:
         List[AnnonceIn_Pydantic]: La liste des annonces preformatees
     """
-    annonces = await Annonce.filter(actif=1).all()
-    if not annonces:
-        raise HTTPException(status_code=404, detail="Pas d'annonces actives")
-    return annonces
+    return await Annonce.filter(actif=1).all()
 
 @app.get("/annonces/private", response_model=List[AnnonceIn_Pydantic])
 async def get_inactive_annonce():
@@ -45,10 +42,7 @@ async def get_inactive_annonce():
     Returns:
        List[AnnonceIn_Pydantic]: La liste des annonces preformatees
     """
-    annonces = await Annonce.filter(actif=0).all()
-    if not annonces:
-        raise HTTPException(status_code=404, detail="Pas d'annonces inactives")
-    return annonces
+    return await Annonce.filter(actif=0).all()
 
 
 @app.post("/annonce/", response_model=Annonce_Pydantic)
