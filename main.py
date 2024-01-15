@@ -26,7 +26,7 @@ async def get_annonces():
     """
     return await AnnonceIn_Pydantic.from_queryset(Annonce.all())
 
-@app.get("/annonces/public", response_model=List[AnnonceIn_Pydantic])
+@app.get("/annonces/public", response_model=List[Annonce_Pydantic])
 async def get_actives_annonces():
     """Retourne la liste des annonces actives; censees etre deja publiees sur la plateforme publique
 
@@ -35,7 +35,7 @@ async def get_actives_annonces():
     """
     return await Annonce.filter(actif=1).all()
 
-@app.get("/annonces/private", response_model=List[AnnonceIn_Pydantic])
+@app.get("/annonces/private", response_model=List[Annonce_Pydantic])
 async def get_inactive_annonce():
     """Retourne la liste des annonces inactives. Cette liste sera consultee par les admins pour valider les annonces
     
