@@ -26,7 +26,7 @@ class Annonce(models.Model):
         - ajouter une nouvelle colonne "type" qui represente le type de l'annonce a savoir "trouve" ou "perdu"
     """
     type = fields.CharField(max_length=100)
-    statut = fields.CharField(max_length=50, default="full") 
+    statut = fields.CharField(max_length=50, default="fall") 
     actif = fields.IntField()  # avertit si l'annonce est publiee ou pas
 
     created_at = fields.DatetimeField(auto_now_add=True, default=datetime.now())

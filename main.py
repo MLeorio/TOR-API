@@ -32,7 +32,7 @@ async def get_actives_annonces():
     Returns:
         List[AnnonceIn_Pydantic]: La liste des annonces preformatees
     """
-    return await Annonce.filter(actif=1).all()
+    return await Annonce.filter(actif=1, statut='fall').all()
 
 @app.get("/annonces/private", response_model=List[Annonce_Pydantic])
 async def get_inactive_annonce():
@@ -41,7 +41,7 @@ async def get_inactive_annonce():
     Returns:
        List[AnnonceIn_Pydantic]: La liste des annonces preformatees
     """
-    return await Annonce.filter(actif=0).all()
+    return await Annonce.filter(actif=0, statut='fall').all()
 
 
 @app.post("/annonce/", response_model=Annonce_Pydantic)
@@ -83,7 +83,7 @@ async def update_annonce(annonce_id: int, annonce: AnnonceIn_Pydantic):
     await Annonce.filter(id=annonce_id).update(**annonce.model_dump(exclude_unset=True))
     return await Annonce_Pydantic.from_queryset_single(Annonce.get(id=annonce_id))
 
-@app.put("/annonce/publier/{id}", response_model=Status)
+@app.get("/annonce/publier/{id}", response_model=Status)
 async def publish_annonce(annonce_id: int):
     await Annonce.filter(id=annonce_id).update(actif=1)
     return Status(message="L'annonce à bien été publiée")
