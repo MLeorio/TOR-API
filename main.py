@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import FastAPI
-from models import Annonce, Annonce_Pydantic, AnnonceIn_Pydantic, Device, Device_Pydantic, DeviceIn_Pydantic
+from models import Annonce, Annonce_Pydantic, AnnonceIn_Pydantic, Device, DeviceIn_Pydantic
 from tortoise.contrib.fastapi import HTTPNotFoundError, register_tortoise
 from pydantic import BaseModel
 from starlette.exceptions import HTTPException
@@ -15,7 +15,6 @@ app = FastAPI(
     description="API pour l'application des objets perdus ou retrouvés",
     docs_url= "/"
 )
-
 
 @app.get("/annonces", response_model=List[Annonce_Pydantic])
 async def get_annonces():
@@ -83,6 +82,11 @@ async def update_annonce(annonce_id: int, annonce: AnnonceIn_Pydantic):
     """
     await Annonce.filter(id=annonce_id).update(**annonce.model_dump(exclude_unset=True))
     return await Annonce_Pydantic.from_queryset_single(Annonce.get(id=annonce_id))
+
+@app.put("/annonce/publier/{id}", response_model=Status)
+async def publish_annonce(annonce_id: int):
+    await Annonce.filter(id=annonce_id).update(actif=1)
+    return Status(message="L'annonce à bien été publiée")
 
 @app.delete("/annonce/{id}", response_model=Status)
 async def delete_annonce(annonce_id: int):
