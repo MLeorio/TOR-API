@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 from fastapi import FastAPI
 from models import Annonce, Annonce_Pydantic, AnnonceIn_Pydantic, Device, DeviceIn_Pydantic
@@ -85,8 +86,14 @@ async def update_annonce(annonce_id: int, annonce: AnnonceIn_Pydantic):
 
 @app.get("/annonce/publier/{id}", response_model=Status)
 async def publish_annonce(annonce_id: int):
-    await Annonce.filter(id=annonce_id).update(actif=1)
+    await Annonce.filter(id=annonce_id).update(actif=1, updated_at=datetime.now())
     return Status(message="L'annonce à bien été publiée")
+
+
+@app.get("/annonce/done/{id}", response_model=Status)
+async def acchieve_annonce(annonce_id: int):
+    await Annonce.filter(id=annonce_id).update(statut="pupa", actif=0, updated_at=datetime.now())
+    return Status(message="Felicitation, objet bien rendu au proprietaire !")
 
 @app.delete("/annonce/{id}", response_model=Status)
 async def delete_annonce(annonce_id: int):
