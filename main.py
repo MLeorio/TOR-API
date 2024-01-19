@@ -17,14 +17,14 @@ app = FastAPI(
 )
 
 
-@app.get("/annonces", response_model=List[AnnonceIn_Pydantic])
+@app.get("/annonces", response_model=List[Annonce_Pydantic])
 async def get_annonces():
     """Recuperer toutes les annonces publiees sur la plateforme
 
     Returns:
         List[AnnonceIn_Pydantic]: La liste des annonces preformatees
     """
-    return await AnnonceIn_Pydantic.from_queryset(Annonce.all())
+    return await Annonce_Pydantic.from_queryset(Annonce.all())
 
 @app.get("/annonces/public", response_model=List[Annonce_Pydantic])
 async def get_actives_annonces():
@@ -58,7 +58,7 @@ async def create_annonce(annonce: AnnonceIn_Pydantic):
     obj = await Annonce.create(**annonce.model_dump(exclude_unset=True))
     return await Annonce_Pydantic.from_tortoise_orm(obj)
 
-@app.get("/annonce/{id}", response_model=AnnonceIn_Pydantic, responses={404:{'model': HTTPNotFoundError}})
+@app.get("/annonce/{id}", response_model=Annonce_Pydantic, responses={404:{'model': HTTPNotFoundError}})
 async def get_annonce(annonce_id: int):
     """Recuperer une annonce publier selon son Id
 
@@ -68,7 +68,7 @@ async def get_annonce(annonce_id: int):
     Returns:
         AnnonceIn_Pydantic: Informations relatives a une annonce sans toutes les informations
     """
-    return await AnnonceIn_Pydantic.from_queryset_single(Annonce.get(id = annonce_id))
+    return await Annonce_Pydantic.from_queryset_single(Annonce.get(id = annonce_id))
 
 @app.put("/annonce/{id}", response_model=Annonce_Pydantic)
 async def update_annonce(annonce_id: int, annonce: AnnonceIn_Pydantic):
