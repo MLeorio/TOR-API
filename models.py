@@ -1,4 +1,3 @@
-from email.policy import default
 from tortoise import fields, models
 from tortoise.contrib.pydantic import pydantic_model_creator
 from datetime import datetime
